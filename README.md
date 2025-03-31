@@ -75,6 +75,13 @@ IP Rotata is a CLI tool that boots up a Wireguard tunnel infrastructure on AWS a
 When the power of ROTATA is invoked, your public IP changes without having to turn down your VPN tunnel.
 All AWS regions are now supported.
 
+**The app will deploy a t2.nano**.
+- You will pay for this
+- You will also pay for the two elastic IP (about 2x3€/month i think)
+- You pay for data transfer exiting your cloud
+At worst, if you send more than 15GB online and never shutdown your VM, I should cost you around 10 to 15€ max per month.
+
+
 ## Hmm very sussy, what's the trick ?
  The tools attaches two IPs on the AWS EC2. The wireguard listens on the two IPs, but if you authenticate on the second one, your packets will come out on the main one.
  The rotata functions simple associate a new IP to the primary interface and free the previous one.
