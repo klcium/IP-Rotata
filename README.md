@@ -1,6 +1,7 @@
 # IP Rotata
 
 ```
+iprotata -h
     _____________________________________________________________________________________
     
     ::::::::::: :::::::::        :::::::::   :::::::: ::::::::::: ::: ::::::::::: :::     
@@ -27,10 +28,52 @@ Actions:
   
 ```
 
+# Basic usage
+You may use `iprotata` or `rotata` to call the tool.
+
+```
+rotata setup --profile rotate --region eu-west-1
+
+WARNING:root:No key pair was defined in parameters, using the latest created key: XXX-KEYNAME
+The following VPC was successfully created: ['VPC-Rotata'] - vpc-06e42d5a44c3355a1                                                                                                           
+The following Subnet was successfully created: ['SNET-Rotata'] - subnet-07d0c3f321d4728b9
+The following IGW was successfully created: igw-01afa2201c52d6dea
+The following Security Group was successfully created: sg-020c858eff35051d4
+The following EC2 Instance was successfully created: i-0a0319d2f304abdd1 - 13.37.203.12
+                                               
+You can now run the following command:                                                        
+sudo wg-quick up wgrotata                                                                     
+                                                                                              
+Instance is still setting up, 'ping 10.0.0.1' until something comes back. UwU                 
+```
+
+```
+rotata delete --profile rotate --region eu-west-1
+This function will clean all ressources within VPC with the ROTATA tag.
+Continue [y/N]? y
+Terminating instances: ['i-0a0319d2f304abdd1']
+
+This may take some time...
+----------
+Instance: i-0a0319d2f304abdd1   Status:shutting-down
+----------
+Instance: i-0a0319d2f304abdd1   Status:shutting-down
+----------
+Instance: i-0a0319d2f304abdd1   Status:terminated
+----------
+Disassociating public IP allocation: eipassoc-03236e7b253b73ad2
+Releasing public IP allocation: eipalloc-03236e7b253b73ad2
+Releasing public IP allocation: eipalloc-03236e7b253b73ad2
+Deleting igw-01afa2201c52d6dea
+Deleting subnet-07d0c3f321d4728b9
+Deleting vpc-06e42d5a44c3355a1
+```
+
 # What it is
 IP Rotata is a CLI tool that boots up a Wireguard tunnel infrastructure on AWS and nicely crafts the local WG interface on the local computer.
 
 When the power of ROTATA is invoked, your public IP changes without having to turn down your VPN tunnel.
+All AWS regions are now supported.
 
 ## Hmm very sussy, what's the trick ?
  The tools attaches two IPs on the AWS EC2. The wireguard listens on the two IPs, but if you authenticate on the second one, your packets will come out on the main one.
@@ -47,52 +90,21 @@ This code was developped on Kali linux (Debian based), if you encounter any issu
 
 ## Requirements
 - `Linux`
-- `Python 3.10` or newer
+- `Python 3.12` or newer
+- `python3-pip`
 - `Poetry` you can install it [here](https://python-poetry.org/docs/#installing-with-the-official-installer).
+- `aws-cli` See [here](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) for installation guide
 - `A working wireguard app`
 - `An AWS account`
-- `aws-cli` (Optionnal but highly recommended) See [here](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) for installation guide
-- `python3-pip`
 - This tool writes files at `/etc/wireguard/`, you must run it as root. A non-root option may be implemented later.
+- Working $PATH ;)
+
+
 
 # Installation and configuration
-
-*THIS INSTALLATION IS FOR LINUX ONLY*
-
-The installation is a little bit tricky. I recommend you to install it in two venv, one as Root, and one with your low privileged user.
-The second one is optional, it's just to avoid having to sudo 
-
-First install local dependencies
-
-```
-curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-unzip awscliv2.zip
-sudo ./aws/install
-```
-
-## Install Iprotata
-### From release
-```
-sudo su
-pip install iprotata-0.1.0.tar.gz
-```
-
-### From source 
-```
-git clone {THIS_URL}
-cd IP-Rotata
-poetry build
-cd ./dist
-sudo su
-pip install iprotata-0.1.0.tar.gz
-```
-
-### Option: use venv:
-Check the "I don't want your sudo su, i want virtual envs >:(" troubleshooting section
-
 ## Configure AWS
-Access to the AWS console and create a user.
-The following AWS are required for the tool to work:
+- Create a user with the following privileges
+- Configure the AWS CLI access keys in your config file or env vars.
 ```
 "ec2:DescribeAddresses",
 "ec2:DescribeInstances",
@@ -109,15 +121,29 @@ The following AWS are required for the tool to work:
 "ec2:DeleteSecurityGroup",
 "ec2:DeleteVpc",
 "ec2:ReleaseAddress",
-"ec2:TerminateInstances",
+"ec2:TerminateInstances"
 ```
-These rules are based on CloudTrail activities, i did not tested them. Ping me if some are missing.
-To ensure minimum privileges, you can add conditions to ensure that they only apply on ressources owned by the user.
+**YOU NEED TO HAVE AT LEAST ONE EXISTING SSH KEY IN THE REGION IN WHICH YOU ARE LAUNCHING THE EC2**
+`aws ec2 create-key-pair --key-name MyKeyPair --query "KeyMaterial" --output text > MyKeyPair.pem`
 
 ### Add keys locally
 Then setup you AWS creds, i recommend you setting a profile instead of using the default one
-`aws configure --profile rotata`
+`aws configure --profile $profile`
 You may also have to do it as no-root if you don't want to bother sudo-ing when rotating your IP.
+
+## Build and install Iprotata
+```
+git clone https://github.com/klcium/IP-Rotata
+cd IP-Rotata
+poetry build
+sudo su
+python3 -m venv venv && source ./venv/bin/activate
+pip install ./dist/iprotata-0.1.0.tar.gz
+iprotata -h
+```
+
+
+____
 
 ## Troubleshooting
 ### BOTO3 can't find my local creds
@@ -130,61 +156,9 @@ If the issue persists, try specifying creds location to Boto3. Find more informa
 
 E.G: 
 `export AWS_CONFIG_FILE=/home/linux/.aws/config`
-
 `export AWS_SHARED_CREDENTIALS_FILE=/home/linux/.aws/credentials`
 
-then `sudo -E iprotata list keys --profile rotata`
-
-### I don't want to install aws-cli tool
-Just create the dir with the config files in.
-```
-mkdir ~/.aws/
-
-echo "[rotata]
-aws_access_key_id=foo
-aws_secret_access_key=bar" >> ~/.aws/credentials
-
-echo "[profile rotata]
-region = eu-west-3" >> ~/.aws/config
-```
-Remember that if you run both as root and non root, to setup the config file in the ~/ directory of each user.
-
-### I don't want your sudo su, i want virtual envs >:(
-Ok fine, here is the full install on how you do it .
-First, setup your creds and conf file `~/.aws/credentials` and  `~/.aws/config`.
-Then, run the following command. Don't foret the `sudo -E iprotata` option when you sudo
-```
-git clone $URL
-cd IP-Rotata
-poetry build
-cd ./dist
-python3 -m venv venv
-source venv/bin/activate
-umask 022
-sudo pip install iprotata-0.1.0.tar.gz
-export AWS_CONFIG_FILE=/home/$(whoami)/.aws/config
-export AWS_SHARED_CREDENTIALS_FILE=/home/$(whoami)/.aws/credentials
-sudo -E iprotata list keys --profile default
-```
-
-# How to use
-Don't use it UwU (may do this part later, if boto3 can't find you profile, it's probably because you sudo-ed your iprotata call. Do `sudo su` first, then run the tool.)
-
-## Details
-You may find a detailed presentation in this [blogpost](https://www.youtube.com/watch?v=xvFZjo5PgG0) i wrote.
-
-## Supported regions
-- ap-south-1
-- ca-central-1
-- eu-north-1
-- eu-west-3
-- eu-west-1
-- ap-northeast-1
-- sa-east-1
-- ap-southeast-1
-- us-east-1
-- us-east-2
-
+then `iprotata list keys --profile $profile`
 
 # Other
 ## Improvements
