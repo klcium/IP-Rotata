@@ -163,7 +163,7 @@ class Ec2:
                     },
                 ],
                 ImageId=ami_id,
-                InstanceType='t3.micro',
+                InstanceType='t2.nano',
                 MinCount=1,
                 MaxCount=1,
                 SecurityGroupIds=security_group_ids,
