@@ -14,36 +14,6 @@ import time
 
 wg_path = "/etc/wireguard/wgrotata.conf"
 
-ami_dict={
-    "ap-south-2":"",
-    "ap-south-1":"ami-01a4f99c4ac11b03c",
-    "eu-south-1":"",
-    "eu-south-2":"ami-07f3cf9598f36cd14",
-    "me-central-1":"",
-    "ca-central-1":"ami-092e716d46cd65cac",
-    "eu-central-1":"",
-    "eu-central-2":"",
-    "us-west-1":"",
-    "us-west-2":"",
-    "af-south-1":"",
-    "eu-north-1":"ami-01e030f0ef61658cf",
-    "eu-west-3":"ami-0c829a4b65fb753d5",
-    "eu-west-2":"",
-    "eu-west-1":"ami-0649a986224ded9da",
-    "ap-northeast-3":"",
-    "ap-northeast-2":"",
-    "me-south-1":"",
-    "ap-northeast-1":"ami-06ee4e2261a4dc5c3",
-    "sa-east-1":"ami-08f74c738bf3f5a45",
-    "ap-east-1":"",
-    "ap-southeast-1":"ami-0753e0e42b20e96e3",
-    "ap-southeast-2":"",
-    "ap-southeast-3":"",
-    "ap-southeast-4":"",
-    "us-east-1":"ami-006dcf34c09e50022",
-    "us-east-2":"ami-05bfbece1ed5beb54",
-}
-
 def setup_args(parser, std_parser):
     setup_parser = parser.add_parser('setup', help='Setup an AWS environnement', parents=[std_parser], formatter_class=std_parser.formatter_class)
     #setup_parser.add_argument("--dest-vpc", dest='aws_dest_vpc', help='Destination VPC')
@@ -91,6 +61,22 @@ def run_checks(args, session_object, ec2_client, vpc_client, vpc_name):
                 exit(1)
     return None
 
+def get_amzn2_ami_id(ec2_client):
+    
+    response = ec2_client.client.describe_images(
+        Owners=["amazon"],
+        Filters=[{"Name": "name", "Values": ["amzn2-ami-kernel*"]}]
+    )
+    
+    if not response["Images"]:
+        logging.fatal("Sorry, no free AMI Amazon Linux 2 was found. If you think this is buggy,  you may specify a specific AMI ID")
+        exit(1)
+    # Trier les AMIs par date de création (du plus ancien au plus récent)
+    latest_ami = sorted(response["Images"], key=lambda x: x["CreationDate"], reverse=True)[0]
+    
+    return latest_ami["ImageId"]
+
+
 ## setup a routine to ask user to fill in the information ?? use context instead ?
 def setup_aws(args, session_object):
     """This function setups the environment for the AWS default or specified aws region"""
@@ -111,11 +97,8 @@ def setup_aws(args, session_object):
     # Also checking if region is supported
     if args.ami_id is not None:
         ami_id = args.ami_id
-    elif args.region_name is not None:
-        ami_id = ami_dict[args.region_name]
     else:
-        ami_id = ami_dict[session_object._session.region_name]
-
+        ami_id = get_amzn2_ami_id(ec2_client)
     if len(ami_id) == 0:
         loggin.fatal("Sorry, the region you selected is currently not supported. Do not hestitate to submit a git issue so that the lazy dev that i am adds the free tier iam for your stupid region")
         exit(1)

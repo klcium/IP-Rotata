@@ -100,6 +100,7 @@ The following AWS are required for the tool to work:
 "ec2:DescribeNetworkInterfaces",
 "ec2:DescribeSecurityGroups",
 "ec2:DescribeSubnets",
+"ec2:DescribeImages",
 "ec2:DisassociateAddress",
 "ec2:DetachInternetGateway"
 "ec2:DetachInternetGateway"
@@ -160,7 +161,7 @@ cd ./dist
 python3 -m venv venv
 source venv/bin/activate
 umask 022
-sudo pip install iprotata-0.1.0.tar.gz 
+sudo pip install iprotata-0.1.0.tar.gz
 export AWS_CONFIG_FILE=/home/$(whoami)/.aws/config
 export AWS_SHARED_CREDENTIALS_FILE=/home/$(whoami)/.aws/credentials
 sudo -E iprotata list keys --profile default
