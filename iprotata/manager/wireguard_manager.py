@@ -25,7 +25,7 @@ class WireguardManager:
 
     def __init__(self, user_wg_ip="10.0.0.2/32", server_wg_ip="10.0.0.1/32", server_public_ip=None, user_allowed_ips="0.0.0.0/0, ::/0", dns = "1.1.1.1", server_port = 51820):
         if self.is_wireguard_installed() is not True:
-            logging.Fatal("Please install wireguard before running this tool")
+            logging.fatal("Please install wireguard before running this tool")
             exit(1)
         if self.is_root() is not True:
             logging.fatal("Please run wireguard as root or use the --no-root option (not implemented yet)")
