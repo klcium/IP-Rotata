@@ -46,7 +46,7 @@ sudo wg-quick up wgrotata
                                                                                               
 Instance is still setting up, 'ping 10.0.0.1' until something comes back. UwU                 
 ```
-
+<!> It's pretty slow, wait for about 2 to 3 minutes
 ```
 rotata delete --profile rotate --region eu-west-1
 This function will clean all ressources within VPC with the ROTATA tag.
@@ -110,25 +110,65 @@ This code was developped on Kali linux (Debian based), if you encounter any issu
 
 # Installation and configuration
 ## Configure AWS
-- Create a user with the following privileges
+- Create a user 
 - Configure the AWS CLI access keys in your config file or env vars.
+- Give the user the following privileges
 ```
-"ec2:DescribeAddresses",
-"ec2:DescribeInstances",
-"ec2:DescribeInternetGateways",
-"ec2:DescribeNetworkInterfaces",
-"ec2:DescribeSecurityGroups",
-"ec2:DescribeSubnets",
-"ec2:DescribeImages",
-"ec2:DisassociateAddress",
-"ec2:DetachInternetGateway"
-"ec2:DetachInternetGateway"
-"ec2:DeleteInternetGateway",
-"ec2:DeleteNetworkInterface",
-"ec2:DeleteSecurityGroup",
-"ec2:DeleteVpc",
-"ec2:ReleaseAddress",
-"ec2:TerminateInstances"
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": [
+                "ec2:AssociateRouteTable",
+                "ec2:AttachInternetGateway",
+                "ec2:AttachNetworkInterface",
+                "ec2:AssociateAddress",
+                "ec2:AttachVolume",
+                "ec2:CreateInternetGateway",
+                "ec2:CreateRoute",
+                "ec2:CreateRouteTable",
+                "ec2:CreateSecurityGroup",
+                "ec2:CreateNewtorkInterface",
+                "ec2:CreateSubnet",
+                "ec2:CreateTags",
+                "ec2:CreateVolume",
+                "ec2:CreateVpc",
+                "ec2:CreateVpcEndpoint",
+                "ec2:CreateVpcs",
+                "ec2:DeleteInternetGateway",
+                "ec2:DeleteNetworkInterface",
+                "ec2:DeleteSecurityGroup",
+                "ec2:DeleteSubnet",
+                "ec2:DeleteVolume",
+                "ec2:DeleteVpc",
+                "ec2:DescribeAddresses",
+                "ec2:DescribeAvailabilityZones",
+                "ec2:DescribeImages",
+                "ec2:DescribeInstanceStatus",
+                "ec2:DescribeInstances",
+                "ec2:DescribeInternetGateways",
+                "ec2:DescribeKeyPairs",
+                "ec2:DescribeNetworkInterfaces",
+                "ec2:DescribeSecurityGroups",
+                "ec2:DescribeSubnets""ec2:DescribeSubnets",
+                "ec2:DescribeVolumes",
+                "ec2:DescribeVpcs",
+                "ec2:DescriveVpcs",
+                "ec2:DetachInternetGateway""ec2:DisassociateAddress",
+                "ec2:GetResourcePolicy",
+                "ec2:GetSubnetCidrReservations",
+                "ec2:ImportVolume",
+                "ec2:ModifyVpcAttribute",
+                "ec2:ReleaseAddress",
+                "ec2:RunInstances",
+                "ec2:TerminateInstances"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
 ```
 **YOU NEED TO HAVE AT LEAST ONE EXISTING SSH KEY IN THE REGION IN WHICH YOU ARE LAUNCHING THE EC2**
 `aws ec2 create-key-pair --key-name MyKeyPair --query "KeyMaterial" --output text > MyKeyPair.pem`
