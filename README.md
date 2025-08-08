@@ -140,6 +140,7 @@ This code was developped on Kali linux (Debian based), if you encounter any issu
                 "ec2:DeleteInternetGateway",
                 "ec2:DeleteNetworkInterface",
                 "ec2:DeleteSecurityGroup",
+                "ec2:AuthorizeSecurityGroupIngress",
                 "ec2:DeleteSubnet",
                 "ec2:DeleteVolume",
                 "ec2:DeleteVpc",
