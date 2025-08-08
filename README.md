@@ -132,6 +132,7 @@ This code was developped on Kali linux (Debian based), if you encounter any issu
                 "ec2:CreateSecurityGroup",
                 "ec2:CreateNetworkInterface",
                 "ec2:CreateSubnet",
+                "ec2:CreateKeyPair",
                 "ec2:CreateTags",
                 "ec2:CreateVolume",
                 "ec2:CreateVpc", 
