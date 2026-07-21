@@ -65,7 +65,7 @@ def get_amzn2_ami_id(ec2_client):
     
     response = ec2_client.client.describe_images(
         Owners=["amazon"],
-        Filters=[{"Name": "name", "Values": ["amzn2-ami-kernel*"]}]
+        Filters=[{"Name": "name", "Values": ["amzn2-ami-kernel*"]},{"Name": "architecture","Values":["x86_64"]}]
     )
     
     if not response["Images"]:
